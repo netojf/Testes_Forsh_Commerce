@@ -13,7 +13,7 @@ using OpenQA.Selenium.Interactions;
 using NUnit.Framework;
 using SeleniumExtras.WaitHelpers;
 
-namespace Ditec
+namespace Ditec.Teste_de_Interface.ST01Funcionarios
 {
 	[TestFixture]
 	public class CT01CadastroDeFuncionarioCamposVaziosTest

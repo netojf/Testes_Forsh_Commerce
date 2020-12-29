@@ -13,7 +13,7 @@ using OpenQA.Selenium.Interactions;
 using NUnit.Framework;
 using SeleniumExtras.WaitHelpers;
 
-namespace Ditec
+namespace Ditec.Teste_de_Interface.ST01Funcionarios
 {
    [TestFixture]
    public class CT02CadastroDeFuncionariosCamposPreenchidosTest
@@ -32,13 +32,13 @@ namespace Ditec
          timespan = new WebDriverWait(driver, TimeSpan.FromSeconds(1)); 
       }
 
-      //[TearDown]
-      //protected void TearDown()
-      //{
-      //   driver.Quit();
-      //}
+		[TearDown]
+		protected void TearDown()
+		{
+			driver.Quit();
+		}
 
-      [Test]
+		[Test]
       public void cT02CadastroDeFuncionariosCamposPreenchidos()
       {
          driver.Navigate().GoToUrl("https://admin.ditecdistribuidora.com.br/");
@@ -67,7 +67,8 @@ namespace Ditec
          driver.FindElement(By.Id("Senha")).SendKeys("1234");
          driver.FindElement(By.Id("Ativo")).Click();
          driver.FindElement(By.CssSelector(".btn-success")).Click();
-         Assert.That(driver.FindElement(By.CssSelector(".alert")).Text, Is.EqualTo("×\\\\nRegistro salvo com sucesso!"));
+         string message = driver.FindElement(By.CssSelector(".alert")).Text; 
+         Assert.That(message == "×\r\nRegistro salvo com sucesso!");
       }
    }
 }

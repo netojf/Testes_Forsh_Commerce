@@ -13,7 +13,7 @@ using OpenQA.Selenium.Interactions;
 using NUnit.Framework;
 using SeleniumExtras.WaitHelpers;
 
-namespace Ditec
+namespace Ditec.Teste_de_Interface.ST01Funcionarios
 {
    [TestFixture]
    public class CT05ExclusaoDeCadastroExistenteTest
@@ -32,11 +32,11 @@ namespace Ditec
          timespan = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
       }
 
-		//[TearDown]
-		//protected void TearDown()
-		//{
-		//	driver.Quit();
-		//}
+		[TearDown]
+		protected void TearDown()
+		{
+			driver.Quit();
+		}
 
 		[Test]
       public void cT05ExclusaoDeCadastroExistente()
@@ -51,14 +51,27 @@ namespace Ditec
          timespan.Until(ExpectedConditions.ElementExists(By.LinkText("Dashboard Admin"))).Click();
          timespan.Until(ExpectedConditions.ElementExists(By.LinkText("Distribuidoras"))).Click();
          timespan.Until(ExpectedConditions.ElementExists(By.LinkText("Funcionários"))).Click();
-         timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("tbody")));
          IWebElement search = timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("#iptSearch")));
-         search.Click(); 
-         search.SendKeys("raphael.mota14@hotmail.com");
-         driver.FindElement(By.CssSelector("button#btnSearch")).Click();
+         search.Click();
 
-			//driver.FindElement(By.CssSelector(".btn-danger > .fa")).Click();
-         
+         string email = "raphael.mota14@hotmail.com";
+
+         for (int i = 0; i < email.Length; i++)
+         {
+            search.SendKeys(email[i].ToString());
+            Thread.Sleep(10);
+         }
+
+			var button1 = driver.FindElement(By.CssSelector("button#btnSearch > i[class='fa fa-search']"));
+         button1.Click();
+
+         timespan.Until(ExpectedConditions.ElementExists((By.CssSelector(".btn.btn-sm.btn-danger")))).Click();
+         IWebElement confirmButton = timespan.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//button[contains(text(), 'Sim')]")));
+         confirmButton.Click();
+         search.Clear();
+         driver.Navigate().Refresh(); 
+         bool assertion = (driver.PageSource.Contains(email));
+         Assert.That(!assertion);
 
          //driver.FindElement(By.CssSelector(".sweet-confirm")).Click();
          //Assert.That(driver.FindElement(By.CssSelector(".toast-message")).Text, Is.EqualTo("Registro excluido com sucesso!"));

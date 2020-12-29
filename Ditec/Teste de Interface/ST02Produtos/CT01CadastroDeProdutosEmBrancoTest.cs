@@ -12,7 +12,7 @@ using OpenQA.Selenium.Support.UI;
 using OpenQA.Selenium.Interactions;
 using NUnit.Framework;
 
-namespace Ditec
+namespace Ditec.Teste_de_Interface.ST01Funcionarios
 {
    [TestFixture]
    public class CT01CadastroDeProdutosEmBrancoTest

@@ -13,7 +13,7 @@ using OpenQA.Selenium.Interactions;
 using NUnit.Framework;
 using SeleniumExtras.WaitHelpers;
 
-namespace Ditec
+namespace Ditec.Teste_de_Interface.ST01Funcionarios
 {
 
    [TestFixture]
@@ -33,13 +33,13 @@ namespace Ditec
          timespan = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
       }
 
-      //[TearDown]
-      //protected void TearDown()
-      //{
-      //   driver.Quit();
-      //}
+		[TearDown]
+		protected void TearDown()
+		{
+			driver.Quit();
+		}
 
-      [Test]
+		[Test]
       public void cT03CadastroDeFuncionarioEmailExistente()
       {
          driver.Navigate().GoToUrl("https://admin.ditecdistribuidora.com.br/");
