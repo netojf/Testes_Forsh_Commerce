@@ -66,12 +66,9 @@ namespace Ditec.Teste_de_Interface.ST01Funcionarios
          emailInput.Clear();
          emailInput.SendKeys(email.Replace("@", "")); 
          timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"))).Click();
-         var c =  emailInput.GetAttribute("title");
-         Actions actions = new Actions(driver);
-         actions.MoveToElement(emailInput).Perform();
-         var tooltip = driver.FindElement(By.XPath("//input[@id='Email']")).Text;
+			string tooltip = driver.FindElement(By.XPath("//input[@id='Email']")).GetAttribute("validationMessage");
          //get the parent of the email input and search for a class named field-validation-valid
-         Assert.That(emailInput.FindElement(By.CssSelector(".field-validation-error")).Text, Is.EqualTo("Inclua um \"@\" no endereço de e-mail. \"raphael.mota14@hotmail.com\" está com um \"@\" faltando."));
+         Assert.That(tooltip, Is.EqualTo("Inclua um \"@\" no endereço de e-mail. \"raphael.mota14hotmail.com\" está com um \"@\" faltando."));
       }
 
       [Test]
@@ -107,6 +104,8 @@ namespace Ditec.Teste_de_Interface.ST01Funcionarios
          emailInput.Clear();
          emailInput.SendKeys(email.Replace("@", ""));
          timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"))).Submit();
+         string errorMessage = emailInput.GetAttribute("validationMessage");
+         Assert.That(errorMessage, Is.EqualTo("Inclua um \"@\" no endereço de e-mail. \"raphael.mota14hotmail.com\" está com um \"@\" faltando."));
       }
 
 
