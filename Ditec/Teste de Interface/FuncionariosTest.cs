@@ -240,10 +240,55 @@ namespace Ditec.Teste_de_Interface
 			passwordInput.SendKeys("1");
 			Console.WriteLine();
 			timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"))).Click();
-			string message = timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[3]/div"))).Text;
-			Assert.That(message, Is.EqualTo 
-				("×\\r\\nRegistro salvo com sucesso!"));
+			try
+			{
+				string message = timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[3]/div"))).Text;
+				Assert.IsFalse(message == "×\r\nRegistro salvo com sucesso!");
+			}
+			catch (ElementNotSelectableException)
+			{
+				//CASO NÃO ENCONTRE A MENSAGEM DE SUCESSO
+				Assert.IsTrue(true);
+			}
 		}
+
+
+		[Test]
+		public void CT07AlteraçãoDeCadastroComSenhaValida()
+		{
+			LoginAndAccess();
+			timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("td")));
+
+			try
+			{
+				var row = timespan.Until(ExpectedConditions.ElementExists(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", email))));
+				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
+			}
+			catch (InvalidSelectorException)
+			{
+
+				throw new Exception("Botão de Edição ou cadastro não encontrado na página");
+			}
+			driver.FindElement(By.Id("Ativo")).Click();
+			timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='alterarSenha']"))).Click();
+			timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='Ativo']"))).Click();
+
+			IWebElement passwordInput = driver.FindElement(By.XPath("//*[@id='Senha']"));
+			passwordInput.SendKeys("1");
+			Console.WriteLine();
+			timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"))).Click();
+			try
+			{
+				string message = timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[3]/div"))).Text;
+				Assert.IsFalse(message == "×\r\nRegistro salvo com sucesso!");
+			}
+			catch (ElementNotSelectableException)
+			{
+				//CASO NÃO ENCONTRE A MENSAGEM DE SUCESSO
+				Assert.IsTrue(true);
+			}
+		}
+
 
 		[Test]
 		public void CT10ExclusaoDeCadastroExistente()
@@ -283,8 +328,6 @@ namespace Ditec.Teste_de_Interface
 			//driver.FindElement(By.CssSelector(".sweet-confirm")).Click();
 			//Assert.That(driver.FindElement(By.CssSelector(".toast-message")).Text, Is.EqualTo("Registro excluido com sucesso!"));
 		}
-
-
 
 	}
 }
