@@ -31,6 +31,10 @@ namespace Ditec.Teste_de_Interface
 		[TearDown]
 		protected void TearDown()
 		{
+			if (ChecarSeCadastroExiste("teste1teste.com"))
+			{
+				email = "testeteste.com";
+			}
 			ExcluirElemento("teste1@teste.com"); 
 			TestTools.driver.Quit();
 		}
@@ -69,7 +73,7 @@ namespace Ditec.Teste_de_Interface
 
 			PreenchimentoDeFormulario("teste", 1, "Administrador Teste", email, "teste123", true); 
 
-			string message = TestTools.driver.FindElement(By.CssSelector(".alert")).Text;
+			string message = TestTools.FindElement(By.CssSelector(".alert")).Text;
 			Assert.That(message == "×\r\nRegistro salvo com sucesso!");
 		}
 
@@ -245,14 +249,13 @@ namespace Ditec.Teste_de_Interface
 		[Test]
 		public void CTI012AlteraçãoDeCadastroComEmailInvalidoClick()
 		{
-
-			//ACESSA O MENU DE FUNCIONÁRIOS
-
+			TestTools.LoginAndAccess();
+			AcessoDashboardFuncionarios();
 
 			//TESTA SE HÁ O CADASTRO DE TESTE (DEFINIDO PELA VARIÁVEL email) E ACESSA A EDIÇÃO DO CADASTRO
 			try
 			{
-				var row = TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", email))));
+				var row = TestTools.FindElement(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", "teste1@teste.com")));
 				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
 			}
 			catch (InvalidSelectorException)
@@ -263,34 +266,25 @@ namespace Ditec.Teste_de_Interface
 
 			IWebElement emailInput = TestTools.driver.FindElement(By.XPath("//input[@id='Email']"));
 			emailInput.Clear();
-			emailInput.SendKeys(email.Replace("@", ""));
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"))).Click();
+			emailInput.SendKeys("teste1teste.com");
+			TestTools.FindElement(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i")).Click();
 			string tooltip = TestTools.driver.FindElement(By.XPath("//input[@id='Email']")).GetAttribute("validationMessage");
 			//get the parent of the email input and search for a class named field-validation-valid
-			Assert.That(tooltip, Is.EqualTo("Inclua um \"@\" no endereço de e-mail. \"raphael.mota14hotmail.com\" está com um \"@\" faltando."));
+			Assert.IsNotEmpty(tooltip);
 		}
 
 
 		[Test]
 		public void CTI13AlteraçãoDeCadastroComEmailInvalidoSubmit()
 		{
+			TestTools.LoginAndAccess();
+			AcessoDashboardFuncionarios();
 
-			//ACESSA O MENU DE FUNCIONÁRIOS
-			TestTools.driver.Navigate().GoToUrl("https://admin.ditecdistribuidora.com.br/");
-			TestTools.driver.Manage().Window.Size = new System.Drawing.Size(1936, 1056);
-			TestTools.driver.FindElement(By.Id("Usuario")).Click();
-			TestTools.driver.FindElement(By.Id("Usuario")).SendKeys("suporte@forsh.com.br");
-			TestTools.driver.FindElement(By.Id("Senha")).SendKeys("1234");
-			TestTools.driver.FindElement(By.CssSelector(".btn")).Click();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.LinkText("Dashboard Admin"))).Click();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.LinkText("Distribuidoras"))).Click();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.LinkText("Funcionários"))).Click();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("td")));
 
 			//TESTA SE HÁ O CADASTRO DE TESTE (DEFINIDO PELA VARIÁVEL email) E ACESSA A EDIÇÃO DO CADASTRO
 			try
 			{
-				var row = TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", email))));
+				var row = TestTools.FindElement(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", email)));
 				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
 			}
 			catch (InvalidSelectorException)
@@ -301,11 +295,12 @@ namespace Ditec.Teste_de_Interface
 
 			IWebElement emailInput = TestTools.driver.FindElement(By.XPath("//input[@id='Email']"));
 			emailInput.Clear();
-			emailInput.SendKeys(email.Replace("@", ""));
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"))).Submit();
+			emailInput.SendKeys("teste1teste.com");
+			emailInput.Submit();
 			string errorMessage = emailInput.GetAttribute("validationMessage");
+			emailInput.Submit(); 
 			//*[@id="page-wrapper"]/div[3]/div
-			Assert.That(errorMessage, Is.EqualTo("Inclua um \"@\" no endereço de e-mail. \"raphael.mota14hotmail.com\" está com um \"@\" faltando."));
+			Assert.IsNotEmpty(errorMessage);
 		}
 
 
@@ -313,7 +308,7 @@ namespace Ditec.Teste_de_Interface
 		public void CTI14AlteraçãoDeCadastroComSenhaInvalida()
 		{
 			TestTools.LoginAndAccess();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("td")));
+			AcessoDashboardFuncionarios(); 
 
 			try
 			{
@@ -325,14 +320,14 @@ namespace Ditec.Teste_de_Interface
 
 				throw new Exception("Botão de Edição ou cadastro não encontrado na página");
 			}
-			TestTools.driver.FindElement(By.Id("Ativo")).Click();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='alterarSenha']"))).Click();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='Ativo']"))).Click();
 
-			IWebElement passwordInput = TestTools.driver.FindElement(By.XPath("//*[@id='Senha']"));
+			TestTools.FindElement(By.XPath("//*[@id='alterarSenha']")).Click();
+			TestTools.FindElement(By.XPath("//*[@id='Ativo']")).Click();
+
+			IWebElement passwordInput = TestTools.FindElement(By.XPath("//*[@id='Senha']"));
 			passwordInput.SendKeys("1");
-			Console.WriteLine();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"))).Click();
+			
+			TestTools.FindElement(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i")).Click();
 			try
 			{
 				string message = TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[3]/div"))).Text;
@@ -418,6 +413,7 @@ namespace Ditec.Teste_de_Interface
 			//Assert.That(TestTools.driver.FindElement(By.CssSelector(".toast-message")).Text, Is.EqualTo("Registro excluido com sucesso!"));
 		}
 		
+
 		/// <summary>
 		/// Acessa o Dashboard de funcionários e checa a tabela está visível
 		/// </summary>
@@ -429,6 +425,7 @@ namespace Ditec.Teste_de_Interface
 			TestTools.FindElement(By.XPath("//*[. = 'Funcionários']")).Click();
 			TestTools.FindElement(By.XPath("//h2[. = 'Funcionários']"));
 		}
+
 
 		bool ExcluirElemento(string email)
 		{
@@ -489,6 +486,49 @@ namespace Ditec.Teste_de_Interface
 			return false; 
 		}
 
+
+		bool ChecarSeCadastroExiste(string email)
+		{
+			TestTools.driver.Navigate().GoToUrl("https://admin.ditecdistribuidora.com.br/funcionario");
+			IWebElement searchbar = TestTools.FindElement(By.CssSelector("#iptSearch"));
+			searchbar.Click();
+
+			string search = email;
+
+			for (int i = 0; i < search.Length; i++)
+			{
+				searchbar.SendKeys(search[i].ToString());
+				Thread.Sleep(10);
+			}
+
+			var button1 = TestTools.FindElement(By.CssSelector("button#btnSearch > i[class='fa fa-search']"));
+			button1.Click();
+
+			try
+			{
+				var row = TestTools.FindElement(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", email)));
+				if (row != null)
+				{
+					return true; 
+				}
+			}
+			catch (StaleElementReferenceException)
+			{
+
+				var row = TestTools.FindElement(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", email)));
+				if (row != null)
+				{
+					return true;
+				}
+			}
+			catch (WebDriverTimeoutException)
+			{
+				return false;
+			}
+			return false;
+		}
+
+
 		/// <summary>
 		/// Preenchimento de Formulário de cadastro de Funcionário
 		/// </summary>
@@ -522,7 +562,6 @@ namespace Ditec.Teste_de_Interface
 					break;
 				default:
 					throw new Exception("Valor de Perfil de Usuario deve estar no intervalo de 0 a 2"); 
-					break;
 			}
 			TestTools.FindElement(By.Id("PerfilFuncionario")).Click();
 			var dropdown = TestTools.FindElement(By.Id("PerfilFuncionario"));

@@ -12,7 +12,7 @@ namespace Ditec
 		public static IWebDriver driver = new ChromeDriver();
 		public static IDictionary<string, object> vars { get; private set; }
 		public static IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
-		public static WebDriverWait timespan = new WebDriverWait(driver, TimeSpan.FromSeconds(4));
+		public static WebDriverWait timespan = new WebDriverWait(driver, TimeSpan.FromSeconds(6));
 
 
 		//ACESSA O ADMIN E O DASHBOARD DE FUNCIONARIOS
