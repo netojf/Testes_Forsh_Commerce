@@ -10,7 +10,7 @@ using System.Text;
 namespace Ditec.Teste_de_Interface
 {
 	[TestFixture]
-	public class LoginTest
+	public class RF01LoginTest
 	{
 		private IWebDriver driver;
 		public IDictionary<string, object> vars { get; private set; }

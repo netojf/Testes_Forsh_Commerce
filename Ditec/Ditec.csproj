@@ -17,4 +17,8 @@
     <PackageReference Include="Selenium.WebDriver.IEDriver" Version="3.150.1.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Tools\Tools.csproj" />
+  </ItemGroup>
+
 </Project>

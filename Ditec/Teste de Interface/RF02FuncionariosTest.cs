@@ -1,42 +1,42 @@
 ﻿using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Support.UI;
-using SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading;
+using Tools;
 
 namespace Ditec.Teste_de_Interface
 {
 	[TestFixture]
-	public class FuncionariosTest
+	public class RF02FuncionariosTest
 	{
-		//private IWebDriver TestTools.driver;
-		//public IDictionary<string, object> vars { get; private set; }
-		//private IJavaScriptExecutor js;
-		//WebDriverWait TestTools.timespan;
 		string email = "teste@teste.com";
+		string emailTeste = "teste1@teste.com";
+		public static IWebDriver driver;
+		public static IJavaScriptExecutor js;
 
-		//[SetUp]
-		//public void SetUp()
-		//{
-		//	TestTools.driver = new ChromeDriver();
-		//	js = (IJavaScriptExecutor)TestTools.driver;
-		//	vars = new Dictionary<string, object>();
-		//	TestTools.timespan = new WebDriverWait(TestTools.driver, TimeSpan.FromSeconds(4));
-		//}
+		[SetUp]
+		public void SetUp()
+		{
+			driver = new ChromeDriver();
+			js = (IJavaScriptExecutor)driver;
+
+
+			driver.Navigate().GoToUrl("https://admin.ditecdistribuidora.com.br/");
+			driver.Manage().Window.Size = new System.Drawing.Size(1936, 1056);
+			driver.FindElement(By.Id("Usuario")).Click();
+			driver.FindElement(By.Id("Usuario")).SendKeys("suporte@forsh.com.br");
+			driver.FindElement(By.Id("Senha")).SendKeys("1234");
+			driver.FindElement(By.CssSelector(".btn")).Click();
+
+			AcessoDashboardFuncionarios(); 
+		}
 
 		[TearDown]
 		protected void TearDown()
 		{
-			if (ChecarSeCadastroExiste("teste1teste.com"))
-			{
-				email = "testeteste.com";
-			}
-			ExcluirElemento("teste1@teste.com"); 
-			TestTools.driver.Quit();
+			ExcluirElemento(emailTeste); 
+			driver.Quit();
 		}
 
 
@@ -44,36 +44,25 @@ namespace Ditec.Teste_de_Interface
 		public void CTI01CadastroDeFuncionarioCamposVazios()
 		{
 
-			TestTools.LoginAndAccess();
 
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.LinkText("Dashboard Admin"))).Click();
-
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.LinkText("Distribuidoras"))).Click();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.LinkText("Funcionários"))).Click();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("button[title='Cadastrar funcionário']"))).Click();
-
-			TestTools.driver.FindElement(By.CssSelector(".btn-success")).Click();
-			Assert.That(TestTools.driver.FindElement(By.CssSelector(".alert")).Text, Is.EqualTo("×\\\\nVerifique os dados informados."));
-			Assert.That(TestTools.driver.FindElement(By.CssSelector(".form-group:nth-child(2) .field-validation-error")).Text, Is.EqualTo("Preencha o campo Nome"));
-			Assert.That(TestTools.driver.FindElement(By.CssSelector(".form-group:nth-child(3) .field-validation-error")).Text, Is.EqualTo("The value \\\'Selecione\\\' is not valid for Perfil do Usuário."));
-			Assert.That(TestTools.driver.FindElement(By.CssSelector(".form-group:nth-child(4) .field-validation-error")).Text, Is.EqualTo("Preencha o campo Nome de Usuário"));
-			Assert.That(TestTools.driver.FindElement(By.CssSelector(".form-group:nth-child(5) .field-validation-error")).Text, Is.EqualTo("Preencha o campo E-mail"));
-			Assert.That(TestTools.driver.FindElement(By.CssSelector("#divSenha .field-validation-error")).Text, Is.EqualTo("Preencha o campo Senha"));
+			TestTools.WaitUntilElementExists(By.CssSelector("button[title='Cadastrar funcionário']"), driver).Click();
+			driver.FindElement(By.CssSelector(".btn-success")).Click();
+			
+			//todo: captura dos avisos quando consertar o erro 404
+			Assert.That(driver.FindElement(By.CssSelector(".alert")).Text, Is.EqualTo("×\\\\nVerifique os dados informados."));
+			Assert.That(driver.FindElement(By.CssSelector(".form-group:nth-child(2) .field-validation-error")).Text, Is.EqualTo("Preencha o campo Nome"));
+			Assert.That(driver.FindElement(By.CssSelector(".form-group:nth-child(3) .field-validation-error")).Text, Is.EqualTo("The value \\\'Selecione\\\' is not valid for Perfil do Usuário."));
+			Assert.That(driver.FindElement(By.CssSelector(".form-group:nth-child(4) .field-validation-error")).Text, Is.EqualTo("Preencha o campo Nome de Usuário"));
+			Assert.That(driver.FindElement(By.CssSelector(".form-group:nth-child(5) .field-validation-error")).Text, Is.EqualTo("Preencha o campo E-mail"));
+			Assert.That(driver.FindElement(By.CssSelector("#divSenha .field-validation-error")).Text, Is.EqualTo("Preencha o campo Senha"));
 		}
 
 
 		[Test]
 		public void CTI02CadastroDeFuncionariosCamposValidos()
 		{
-			TestTools.LoginAndAccess();
-
-			AcessoDashboardFuncionarios(); 
-
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("button[title='Cadastrar funcionário']"))).Click();
-
-			PreenchimentoDeFormulario("teste", 1, "Administrador Teste", email, "teste123", true); 
-
-			string message = TestTools.FindElement(By.CssSelector(".alert")).Text;
+			AcessoCadastro(); 
+			string message = TestTools.WaitUntilElementExists(By.CssSelector(".alert"),driver).Text;
 			Assert.That(message == "×\r\nRegistro salvo com sucesso!");
 		}
 
@@ -81,336 +70,434 @@ namespace Ditec.Teste_de_Interface
 		[Test]
 		public void CTI03CadastroDeFuncionarioEmailExistente()
 		{
-			TestTools.LoginAndAccess();
+			AcessoCadastro("teste1", 1, "Administrador Teste1", email, "teste1234", true);
 
-			AcessoDashboardFuncionarios();
-
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("button[title='Cadastrar funcionário']"))).Click();
-
-			PreenchimentoDeFormulario("teste1", 1, "Administrador Teste1", email, "teste1234", true);
-
-			var emailElement = TestTools.FindElement(By.XPath("//input[@id='Email']"));
+			var emailElement = TestTools.WaitUntilElementExists(By.XPath("//input[@id='Email']"),driver);
 			string tooltip = emailElement.GetAttribute("ValidationMessage");
 			Assert.IsNotEmpty(tooltip);
 
-			var alertTxt = TestTools.FindElement(By.CssSelector(".alert")).Text; 
-			Assert.That(TestTools.FindElement(By.CssSelector(".alert")).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
-
-
+			Assert.That(TestTools.WaitUntilElementExists(By.CssSelector(".alert"),driver).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
 		}
+
 
 		[Test]
 		public void CTI04CadastroDeFuncionarioNomeExistente()
 		{
-			TestTools.LoginAndAccess();
-			AcessoDashboardFuncionarios();
 
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("button[title='Cadastrar funcionário']"))).Click();
+			AcessoCadastro("teste", 1, "Administrador Teste1", "teste1@teste.com", "teste1234", true);
 
-			PreenchimentoDeFormulario("teste", 1, "Administrador Teste1", "teste1@teste.com", "teste1234", true);
-
-			string message = TestTools.driver.FindElement(By.CssSelector(".alert")).Text;
+			string message = driver.FindElement(By.CssSelector(".alert")).Text;
 			Assert.That(message == "×\r\nRegistro salvo com sucesso!");
 
 		}
 
+
 		[Test]
 		public void CTI05CadastroDeFuncionarioNomeDeUsuarioExistente()
 		{
+			AcessoCadastro("teste1", 1, "Administrador Teste", "teste1@teste.com", "teste1234", true);
 
-			TestTools.LoginAndAccess();
-			AcessoDashboardFuncionarios();
-
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("button[title='Cadastrar funcionário']"))).Click();
-
-			PreenchimentoDeFormulario("teste1", 1, "Administrador Teste", "teste1@teste.com", "teste1234", true);
-
-			var emailElement = TestTools.FindElement(By.XPath("//*[@id='NomeUsuario']"));
+			var emailElement = TestTools.WaitUntilElementExists(By.XPath("//*[@id='NomeUsuario']"),driver);
 			string tooltip = emailElement.GetAttribute("ValidationMessage");
 			Assert.IsNotEmpty(tooltip);
 
 			
-			Assert.That(TestTools.FindElement(By.CssSelector(".alert")).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
-
+			Assert.That(TestTools.WaitUntilElementExists(By.CssSelector(".alert"),driver).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
 		}
+
 
 		[Test]
 		public void CTI06CadastroDeFuncionarioSenhaExistente()
 		{
 
-			TestTools.LoginAndAccess();
-			AcessoDashboardFuncionarios();
+			AcessoCadastro("teste1", 1, "Administrador Teste1", "teste1@teste.com", "teste123", true);
 
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("button[title='Cadastrar funcionário']"))).Click();
-
-			PreenchimentoDeFormulario("teste1", 1, "Administrador Teste1", "teste1@teste.com", "teste123", true);
-
-			
-
-			string message = TestTools.driver.FindElement(By.CssSelector(".alert")).Text;
+			string message = driver.FindElement(By.CssSelector(".alert")).Text;
 			Assert.That(message == "×\r\nRegistro salvo com sucesso!");
 		}
+
 
 		[Test]
 		public void CTI07CadastroDeFuncionarioNomeVazio()
 		{
+			
+			AcessoCadastro("", 1, "Administrador Teste1", "teste1@teste.com", "teste1234", true);
 
-			TestTools.LoginAndAccess();
-			AcessoDashboardFuncionarios();
-
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("button[title='Cadastrar funcionário']"))).Click();
-
-			PreenchimentoDeFormulario("", 1, "Administrador Teste1", "teste1@teste.com", "teste1234", true);
-
-			var emailElement = TestTools.FindElement(By.XPath("//*[@id='Nome']"));
+			var emailElement = TestTools.WaitUntilElementExists(By.XPath("//*[@id='Nome']"),driver);
 			string tooltip = emailElement.GetAttribute("ValidationMessage");
 			Assert.IsNotEmpty(tooltip);
 
 
-			Assert.That(TestTools.FindElement(By.CssSelector(".alert")).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
+			Assert.That(TestTools.WaitUntilElementExists(By.CssSelector(".alert"),driver).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
 		}
+
 
 		[Test]
 		public void CTI08CadastroDeFuncionarioPerfilDeUsuarioNSelecionado()
 		{
-			TestTools.LoginAndAccess();
-			AcessoDashboardFuncionarios();
+			AcessoCadastro("teste1", 0, "Administrador Teste1", "teste1@teste.com", "teste1234", true);
 
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("button[title='Cadastrar funcionário']"))).Click();
-
-			PreenchimentoDeFormulario("teste1", 0, "Administrador Teste1", "teste1@teste.com", "teste1234", true);
-
-			var emailElement = TestTools.FindElement(By.XPath("//*[@id='PerfilFuncionario']"));
+			var emailElement = TestTools.WaitUntilElementExists(By.XPath("//*[@id='PerfilFuncionario']"),driver);
 			string tooltip = emailElement.GetAttribute("ValidationMessage");
 			Assert.IsNotEmpty(tooltip);
 
 
-			Assert.That(TestTools.FindElement(By.CssSelector(".alert")).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
+			Assert.That(TestTools.WaitUntilElementExists(By.CssSelector(".alert"),driver).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
 		}
+
 
 		[Test]
 		public void CTI09CadastroDeFuncionarioNomeDeUsuarioVazio()
 		{
 
-			TestTools.LoginAndAccess();
-			AcessoDashboardFuncionarios();
+			AcessoCadastro("teste1", 1, "", "teste1@teste.com", "teste1234", true);
 
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("button[title='Cadastrar funcionário']"))).Click();
-
-			PreenchimentoDeFormulario("teste1", 1, "", "teste1@teste.com", "teste1234", true);
-
-			var field = TestTools.FindElement(By.XPath("//*[@id='NomeUsuario']"));
+			var field = TestTools.WaitUntilElementExists(By.XPath("//*[@id='NomeUsuario']"),driver);
 			string tooltip = field.GetAttribute("ValidationMessage");
 			Assert.IsNotEmpty(tooltip);
 
 
-			Assert.That(TestTools.FindElement(By.CssSelector(".alert")).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
+			Assert.That(TestTools.WaitUntilElementExists(By.CssSelector(".alert"),driver).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
 		}
+
 
 		[Test]
 		public void CTI10CadastroDeFuncionarioEmailVazio()
 		{
-			TestTools.LoginAndAccess();
-			AcessoDashboardFuncionarios();
+			AcessoCadastro("teste1", 1, "Administrador Teste1", "", "teste1234", true);
 
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("button[title='Cadastrar funcionário']"))).Click();
-
-			PreenchimentoDeFormulario("teste1", 1, "Administrador Teste1", "", "teste1234", true);
-
-			var field = TestTools.FindElement(By.XPath("//*[@id='NomeUsuario']"));
+			var field =TestTools.WaitUntilElementExists(By.XPath("//*[@id='NomeUsuario']"),driver);
 			string tooltip = field.GetAttribute("ValidationMessage");
 			Assert.IsNotEmpty(tooltip);
 
 
-			Assert.That(TestTools.FindElement(By.CssSelector(".alert")).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
+			Assert.That(TestTools.WaitUntilElementExists(By.CssSelector(".alert"),driver).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
 		}
+
 
 		[Test]
 		public void CTI11CadastroDeFuncionarioSenhaVazia()
 		{
+			AcessoCadastro("teste1", 1, "Administrador Teste1", "teste1@teste.com", "", true);
 
-			TestTools.LoginAndAccess();
-			AcessoDashboardFuncionarios();
-
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("button[title='Cadastrar funcionário']"))).Click();
-
-			PreenchimentoDeFormulario("teste1", 1, "Administrador Teste1", "teste1@teste.com", "", true);
-
-			var field = TestTools.FindElement(By.XPath("//*[@id='Senha']"));
+			var field = TestTools.WaitUntilElementExists(By.XPath("//*[@id='Senha']"),driver);
 			string tooltip = field.GetAttribute("ValidationMessage");
 			Assert.IsNotEmpty(tooltip);
 
 
-			Assert.That(TestTools.FindElement(By.CssSelector(".alert")).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
+			Assert.That(TestTools.WaitUntilElementExists(By.CssSelector(".alert"),driver).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
 		}
 
-		#region Em desenvolvimento
-
+	
 		[Test]
-		public void CTI012AlteraçãoDeCadastroComEmailInvalidoClick()
+		public void CTI012AlteracaoDeCadastroEmailValido()
 		{
-			TestTools.LoginAndAccess();
-			AcessoDashboardFuncionarios();
+			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste2@teste.com", "teste1234", true);
 
-			//TESTA SE HÁ O CADASTRO DE TESTE (DEFINIDO PELA VARIÁVEL email) E ACESSA A EDIÇÃO DO CADASTRO
-			try
+			var row = RetornarCadastro("teste2@teste.com");
+			if (row != null)
 			{
-				var row = TestTools.FindElement(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", "teste1@teste.com")));
 				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
 			}
-			catch (InvalidSelectorException)
+			else
 			{
-
-				throw new Exception("Botão de Edição ou cadastro não encontrado na página");
+				emailTeste = "teste2@teste.com"; 
+				Assert.IsTrue(false);
 			}
 
-			IWebElement emailInput = TestTools.driver.FindElement(By.XPath("//input[@id='Email']"));
+
+			IWebElement emailInput = driver.FindElement(By.XPath("//input[@id='Email']"));
 			emailInput.Clear();
-			emailInput.SendKeys("teste1teste.com");
-			TestTools.FindElement(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i")).Click();
-			string tooltip = TestTools.driver.FindElement(By.XPath("//input[@id='Email']")).GetAttribute("validationMessage");
-			//get the parent of the email input and search for a class named field-validation-valid
+			emailInput.SendKeys("teste1@teste.com");
+
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"),driver).Click();
+			string message = TestTools.WaitUntilElementExists(By.CssSelector(".alert"),driver).Text;
+			Assert.That(message == "×\r\nRegistro salvo com sucesso!");
+		}
+
+
+		[Test]
+		public void CTI013AlteracaoDeCadastroNomeDeUsuarioValido()
+		{
+			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
+
+			var row = RetornarCadastro("teste1@teste.com");
+			if (row != null)
+			{
+				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
+			}
+			else
+			{
+				Assert.IsTrue(false);
+			}
+
+
+			IWebElement emailInput = driver.FindElement(By.XPath("//*[@id='NomeUsuario']"));
+			emailInput.Clear();
+			emailInput.SendKeys("Administrador Teste2");
+
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"), driver).Click();
+			string message = TestTools.WaitUntilElementExists(By.CssSelector(".alert"), driver).Text;
+			Assert.That(message == "×\r\nRegistro salvo com sucesso!");
+		}
+
+
+		[Test]
+		public void CTI014AlteracaoDeCadastroNomeValido()
+		{
+			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
+
+			var row = RetornarCadastro("teste1@teste.com");
+			if (row != null)
+			{
+				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
+			}
+			else
+			{
+				Assert.IsTrue(false);
+			}
+
+
+			IWebElement emailInput = driver.FindElement(By.XPath("//*[@id='Nome']"));
+			emailInput.Clear();
+			emailInput.SendKeys("Teste2");
+
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"), driver).Click();
+			string message = TestTools.WaitUntilElementExists(By.CssSelector(".alert"), driver).Text;
+			Assert.That(message == "×\r\nRegistro salvo com sucesso!");
+		}
+
+
+		[Test]
+		public void CTI015AlteracaoDeCadastroPerfilDeUsuarioAnalista()
+		{
+			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
+
+			var row = RetornarCadastro("teste1@teste.com");
+			if (row != null)
+			{
+				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
+			}
+			else
+			{
+				Assert.IsTrue(false);
+			}
+
+			TestTools.WaitUntilElementExists(By.Id("PerfilFuncionario"), driver).Click();
+			var dropdown = TestTools.WaitUntilElementExists(By.Id("PerfilFuncionario"), driver);
+			dropdown.FindElement(By.XPath(string.Format("//option[. = '{0}']", "AnalistaCadastro"))).Click();
+
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"), driver).Click();
+			string message = TestTools.WaitUntilElementExists(By.CssSelector(".alert"), driver).Text;
+			Assert.That(message == "×\r\nRegistro salvo com sucesso!");
+		}
+
+
+		[Test]
+		public void CTI16AlteraçãoDeCadastroSenhaValida()
+		{
+
+			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
+
+			var row = RetornarCadastro("teste1@teste.com");
+			if (row != null)
+			{
+				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
+			}
+			else
+			{
+				Assert.IsTrue(false);
+			}
+
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='alterarSenha']"), driver).Click();
+
+			IWebElement passwordInput = TestTools.WaitUntilElementInteractable(By.XPath("//*[@id='Senha']"), driver);
+			passwordInput.SendKeys("Senha1234");
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"), driver).Click();
+
+			try
+			{
+				string message = TestTools.WaitUntilElementExists(By.XPath("//*[@id='page-wrapper']/div[3]/div"), driver).Text;
+				Assert.IsTrue(message == "×\r\nRegistro salvo com sucesso!");
+			}
+			catch (ElementNotSelectableException)
+			{
+				Assert.IsTrue(false);
+			}
+		}
+
+
+		[Test]
+		public void CTI017AlteracaoDeCadastroNomeInvalido()
+		{
+			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
+
+			var row = RetornarCadastro("teste1@teste.com");
+			if (row != null)
+			{
+				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
+			}
+			else
+			{
+				Assert.IsTrue(false);
+			}
+
+
+			IWebElement emailInput = driver.FindElement(By.XPath("//*[@id='Nome']"));
+			emailInput.Clear();
+			emailInput.SendKeys("T*-+.");
+
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"), driver).Click();
+
+
+			string tooltip = emailInput.GetAttribute("validationMessage");
 			Assert.IsNotEmpty(tooltip);
 		}
 
 
 		[Test]
-		public void CTI13AlteraçãoDeCadastroComEmailInvalidoSubmit()
+		public void CTI018AlteracaoDeCadastroNomeDeUsuarioInvalido()
 		{
-			TestTools.LoginAndAccess();
-			AcessoDashboardFuncionarios();
+			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
 
-
-			//TESTA SE HÁ O CADASTRO DE TESTE (DEFINIDO PELA VARIÁVEL email) E ACESSA A EDIÇÃO DO CADASTRO
-			try
+			var row = RetornarCadastro("teste1@teste.com");
+			if (row != null)
 			{
-				var row = TestTools.FindElement(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", email)));
 				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
 			}
-			catch (InvalidSelectorException)
+			else
 			{
-
-				throw new Exception("Botão de Edição ou cadastro não encontrado na página");
+				Assert.IsTrue(false);
 			}
 
-			IWebElement emailInput = TestTools.driver.FindElement(By.XPath("//input[@id='Email']"));
+
+			IWebElement emailInput = driver.FindElement(By.XPath("//*[@id='NomeUsuario']"));
+			emailInput.Clear();
+			emailInput.SendKeys("t*/-");
+
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"), driver).Click();
+
+			string tooltip = emailInput.GetAttribute("validationMessage");
+			Assert.IsNotEmpty(tooltip);
+
+		}
+
+
+		[Test]
+		public void CTI019AlteracaoDeCadastroEmailInvalido()
+		{
+
+			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste2@teste.com", "teste1234", true);
+
+			var row = RetornarCadastro("teste2@teste.com");
+			emailTeste = "teste2@teste.com"; 
+			if (row != null)
+			{
+				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
+			}
+			else
+			{
+				Assert.IsTrue(false);
+			}
+
+
+			IWebElement emailInput = driver.FindElement(By.XPath("//input[@id='Email']"));
 			emailInput.Clear();
 			emailInput.SendKeys("teste1teste.com");
-			emailInput.Submit();
-			string errorMessage = emailInput.GetAttribute("validationMessage");
-			emailInput.Submit(); 
-			//*[@id="page-wrapper"]/div[3]/div
-			Assert.IsNotEmpty(errorMessage);
+
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"),driver).Click();
+			string tooltip = driver.FindElement(By.XPath("//input[@id='Email']")).GetAttribute("validationMessage");
+
+			Assert.IsNotEmpty(tooltip);
 		}
 
 
 		[Test]
-		public void CTI14AlteraçãoDeCadastroComSenhaInvalida()
+		public void CTI20AlteraçãoDeCadastroSenhaInvalida()
 		{
-			TestTools.LoginAndAccess();
-			AcessoDashboardFuncionarios(); 
+			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
 
-			try
+			var row = RetornarCadastro("teste1@teste.com");
+			if (row != null)
 			{
-				var row = TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", email))));
 				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
 			}
-			catch (InvalidSelectorException)
+			else
 			{
-
-				throw new Exception("Botão de Edição ou cadastro não encontrado na página");
+				Assert.IsTrue(false);
 			}
 
-			TestTools.FindElement(By.XPath("//*[@id='alterarSenha']")).Click();
-			TestTools.FindElement(By.XPath("//*[@id='Ativo']")).Click();
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='alterarSenha']"),driver).Click();
 
-			IWebElement passwordInput = TestTools.FindElement(By.XPath("//*[@id='Senha']"));
+			IWebElement passwordInput = TestTools.WaitUntilElementExists(By.XPath("//*[@id='Senha']"),driver);
 			passwordInput.SendKeys("1");
+
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"),driver).Click();
+
+			string tooltip = passwordInput.GetAttribute("validationMessage");
+			Assert.IsNotEmpty(tooltip);
+		}
+
+		[Test]
+		public void CTI21AlteraçãoDeCadastroPerfilNãoSelecionado()
+		{
+			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
+
+			var row = RetornarCadastro("teste1@teste.com");
+			if (row != null)
+			{
+				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
+			}
+			else
+			{
+				Assert.IsTrue(false);
+			}
 			
-			TestTools.FindElement(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i")).Click();
+			TestTools.WaitUntilElementExists(By.Id("PerfilFuncionario"), driver).Click();
+			var dropdown = TestTools.WaitUntilElementExists(By.Id("PerfilFuncionario"), driver);
+			dropdown.FindElement(By.XPath(string.Format("//option[. = '{0}']", "Selecione"))).Click();
+
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"), driver).Click();
+
+			Assert.That(TestTools.WaitUntilElementExists(By.CssSelector(".alert"), driver).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
+		}
+
+
+		[Test]
+		public void CTI22AlteracaoDeCadastroParaInativo()
+		{
+			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
+
+			var row = RetornarCadastro("teste1@teste.com");
+			if (row != null)
+			{
+				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
+			}
+			else
+			{
+				Assert.IsTrue(false);
+			}
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='Ativo']"), driver).Click();
+
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"), driver).Click();
+
 			try
 			{
-				string message = TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[3]/div"))).Text;
-				Assert.IsFalse(message == "×\r\nRegistro salvo com sucesso!");
+				string message = TestTools.WaitUntilElementExists(By.XPath("//*[@id='page-wrapper']/div[3]/div"), driver).Text;
+				Assert.IsTrue(message == "×\r\nRegistro salvo com sucesso!");
 			}
 			catch (ElementNotSelectableException)
 			{
-				//CASO NÃO ENCONTRE A MENSAGEM DE SUCESSO
-				Assert.IsTrue(true);
+				Assert.IsTrue(false);
 			}
 		}
 
 
 		[Test]
-		public void CTI15AlteraçãoDeCadastroComSenhaValida()
+		public void CTI23ExclusaoDeCadastroExistente()
 		{
-			TestTools.LoginAndAccess();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.CssSelector("td")));
-
-			try
-			{
-				var row = TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", email))));
-				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
-			}
-			catch (InvalidSelectorException)
-			{
-
-				throw new Exception("Botão de Edição ou cadastro não encontrado na página");
-			}
-			TestTools.driver.FindElement(By.Id("Ativo")).Click();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='alterarSenha']"))).Click();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='Ativo']"))).Click();
-
-			IWebElement passwordInput = TestTools.driver.FindElement(By.XPath("//*[@id='Senha']"));
-			passwordInput.SendKeys("1");
-			Console.WriteLine();
-			TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[4]/div/div/div/div[2]/form/div/div[8]/div/button/i"))).Click();
-			try
-			{
-				string message = TestTools.timespan.Until(ExpectedConditions.ElementExists(By.XPath("//*[@id='page-wrapper']/div[3]/div"))).Text;
-				Assert.IsFalse(message == "×\r\nRegistro salvo com sucesso!");
-			}
-			catch (ElementNotSelectableException)
-			{
-				//CASO NÃO ENCONTRE A MENSAGEM DE SUCESSO
-				Assert.IsTrue(true);
-			}
-		}
-
-
-		#endregion
-		[Test]
-		public void CTI19ExclusaoDeCadastroExistente()
-		{
-			TestTools.LoginAndAccess();
-
-			AcessoDashboardFuncionarios();
-			
-
-			IWebElement search = TestTools.FindElement(By.CssSelector("#iptSearch"));
-			search.Click();
-
-			string email = this.email;
-
-			for (int i = 0; i < email.Length; i++)
-			{
-				search.SendKeys(email[i].ToString());
-				Thread.Sleep(10);
-			}
-
-			var button1 = TestTools.driver.FindElement(By.CssSelector("button#btnSearch > i[class='fa fa-search']"));
-			button1.Click();
-
-			TestTools.timespan.Until(ExpectedConditions.ElementExists((By.CssSelector(".btn.btn-sm.btn-danger")))).Click();
-			IWebElement confirmButton = TestTools.timespan.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//button[contains(text(), 'Sim')]")));
-			confirmButton.Click();
-			search.Clear();
-			TestTools.driver.Navigate().Refresh();
-			bool assertion = (TestTools.driver.PageSource.Contains(email));
-			Assert.That(!assertion);
-
-			//TestTools.driver.FindElement(By.CssSelector(".sweet-confirm")).Click();
-			//Assert.That(TestTools.driver.FindElement(By.CssSelector(".toast-message")).Text, Is.EqualTo("Registro excluido com sucesso!"));
+			ExcluirElemento(email);
+			Assert.IsTrue(true);	
 		}
 		
 
@@ -419,113 +506,76 @@ namespace Ditec.Teste_de_Interface
 		/// </summary>
 		void AcessoDashboardFuncionarios()
 		{
-			TestTools.FindElement(By.XPath("//*[. = 'Dashboard Admin']")).Click();
-			TestTools.FindElement(By.XPath("//*[. = 'Distribuidoras']")).Click();
-			Thread.Sleep(1000); 
-			TestTools.FindElement(By.XPath("//*[. = 'Funcionários']")).Click();
-			TestTools.FindElement(By.XPath("//h2[. = 'Funcionários']"));
+			TestTools.WaitUntilElementExists(By.XPath("//*[. = 'Dashboard Admin']"), driver).Click();
+			TestTools.WaitUntilElementExists(By.XPath("//*[. = 'Distribuidoras']"),driver).Click();
+			TestTools.WaitUntilElementInteractable(By.XPath("//*[. = 'Funcionários']"),driver).Click();
+			TestTools.WaitUntilElementExists(By.XPath("//h2[. = 'Funcionários']"),driver);
 		}
 
 
-		bool ExcluirElemento(string email)
+		bool ExcluirElemento(string search)
 		{
-			TestTools.driver.Navigate().GoToUrl("https://admin.ditecdistribuidora.com.br/funcionario");
-			IWebElement searchbar = TestTools.FindElement(By.CssSelector("#iptSearch"));
-			searchbar.Click();
+			driver.Navigate().GoToUrl("https://admin.ditecdistribuidora.com.br/funcionario");
 
-			string search = email;
 
-			for (int i = 0; i < search.Length; i++)
+			var entrada = RetornarCadastro(search);
+			if (entrada!= null)
 			{
-				searchbar.SendKeys(search[i].ToString());
-				Thread.Sleep(10);
+				entrada.FindElement(By.CssSelector(".btn.btn-sm.btn-danger")).Click();
 			}
-
-			var button1 = TestTools.FindElement(By.CssSelector("button#btnSearch > i[class='fa fa-search']"));
-			button1.Click();
-
-			try
-			{
-				var row = TestTools.FindElement(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", email)));
-				row.FindElement(By.CssSelector(".btn.btn-sm.btn-danger")).Click();
-			}
-			catch (StaleElementReferenceException)
-			{
-
-				var row = TestTools.FindElement(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", email)));
-				row.FindElement(By.CssSelector(".btn.btn-sm.btn-danger")).Click();
-			}
-			catch(NoSuchElementException)
-			{
-				return false; 
-			}
-			catch(WebDriverTimeoutException)
+			else
 			{
 				return false; 
 			}
 
-			IWebElement confirmButton = TestTools.timespan.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//button[contains(text(), 'Sim')]")));
+			TestTools.WaitUntilElementExists(By.XPath("//button[contains(text(), 'Sim')]"),driver).Click();
 
-			confirmButton.Click();
-			searchbar.Clear();
-			TestTools.driver.Navigate().Refresh();
+			driver.Navigate().Refresh();
 
-			try
+			if (RetornarCadastro(search) != null)
 			{
-				TestTools.FindElement(By.XPath(string.Format("//*[. = '{0}']", email)));
+				throw new Exception("A exclusão do Cadastro falhou"); 
 			}
-			catch (NoSuchElementException)
-			{
-				return true;
-			}
-			catch(WebDriverTimeoutException)
+			else
 			{
 				return true; 
 			}
-
-			return false; 
 		}
 
 
-		bool ChecarSeCadastroExiste(string email)
+		IWebElement RetornarCadastro(string search)
 		{
-			TestTools.driver.Navigate().GoToUrl("https://admin.ditecdistribuidora.com.br/funcionario");
-			IWebElement searchbar = TestTools.FindElement(By.CssSelector("#iptSearch"));
+			IWebElement searchbar = TestTools.WaitUntilElementExists(By.CssSelector("#iptSearch"),driver);
 			searchbar.Click();
 
-			string search = email;
+			searchbar.SendKeys(search);
+			searchbar.Click();
 
-			for (int i = 0; i < search.Length; i++)
-			{
-				searchbar.SendKeys(search[i].ToString());
-				Thread.Sleep(10);
-			}
 
-			var button1 = TestTools.FindElement(By.CssSelector("button#btnSearch > i[class='fa fa-search']"));
-			button1.Click();
+			TestTools.WaitUntilElementExists(By.CssSelector("button#btnSearch > i[class='fa fa-search']"),driver).Click();
 
 			try
 			{
-				var row = TestTools.FindElement(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", email)));
-				if (row != null)
-				{
-					return true; 
-				}
+				return TestTools.WaitUntilElementExists(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", search)),driver);
 			}
 			catch (StaleElementReferenceException)
 			{
 
-				var row = TestTools.FindElement(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", email)));
-				if (row != null)
-				{
-					return true;
-				}
+				return TestTools.WaitUntilElementExists(By.XPath(string.Format("//tr/td[contains(text(), '{0}')]//parent::tr", search)), driver);
 			}
 			catch (WebDriverTimeoutException)
 			{
-				return false;
+				return null;
 			}
-			return false;
+		}
+
+
+		void AcessoCadastro(string nome = "teste", int perfilDeUsuario = 1, string nomeDeUsuario = "Administrador Teste", string email = "teste@teste.com", string senha = "teste123", bool ativo = true)
+		{
+			TestTools.WaitUntilElementExists(By.CssSelector("button[title='Cadastrar funcionário']"), driver).Click();
+
+			PreenchimentoDeFormulario(nome, perfilDeUsuario, nomeDeUsuario, email, senha, ativo);
+
 		}
 
 
@@ -544,8 +594,8 @@ namespace Ditec.Teste_de_Interface
 		void PreenchimentoDeFormulario(string nome, int perfilDeUsuario, string nomeDeUsuario, string email, string senha, bool ativo )
 		{
 			//NOME
-			TestTools.FindElement(By.Id("Nome")).Click();
-			TestTools.FindElement(By.Id("Nome")).SendKeys(nome);
+			TestTools.WaitUntilElementExists(By.Id("Nome"),driver).Click();
+			TestTools.WaitUntilElementExists(By.Id("Nome"),driver).SendKeys(nome);
 
 			//PERFIL DE USUARIO
 			string perfil = "";
@@ -563,29 +613,29 @@ namespace Ditec.Teste_de_Interface
 				default:
 					throw new Exception("Valor de Perfil de Usuario deve estar no intervalo de 0 a 2"); 
 			}
-			TestTools.FindElement(By.Id("PerfilFuncionario")).Click();
-			var dropdown = TestTools.FindElement(By.Id("PerfilFuncionario"));
+			TestTools.WaitUntilElementExists(By.Id("PerfilFuncionario"),driver).Click();
+			var dropdown = TestTools.WaitUntilElementExists(By.Id("PerfilFuncionario"),driver);
 			dropdown.FindElement(By.XPath(string.Format("//option[. = '{0}']", perfil))).Click();
 
 			//NOME DE USUARIO
-			TestTools.FindElement(By.Id("NomeUsuario")).Click();
-			TestTools.FindElement(By.Id("NomeUsuario")).SendKeys(nomeDeUsuario);
+			TestTools.WaitUntilElementExists(By.Id("NomeUsuario"),driver).Click();
+			TestTools.WaitUntilElementExists(By.Id("NomeUsuario"),driver).SendKeys(nomeDeUsuario);
 
 			//EMAIL
-			TestTools.FindElement(By.Id("Email")).Click();
-			TestTools.FindElement(By.Id("Email")).SendKeys(email);
+			TestTools.WaitUntilElementExists(By.Id("Email"),driver).Click();
+			TestTools.WaitUntilElementExists(By.Id("Email"),driver).SendKeys(email);
 
 			//SENHA 
-			TestTools.FindElement(By.Id("Senha")).SendKeys(senha);
+			TestTools.WaitUntilElementExists(By.Id("Senha"),driver).SendKeys(senha);
 
 			//ATIVO
 			if (ativo)
 			{
-				TestTools.FindElement(By.Id("Ativo")).Click();
+				TestTools.WaitUntilElementExists(By.Id("Ativo"),driver).Click();
 			}
 
 			//SUMISSÃO POR BOTÃO
-			TestTools.FindElement(By.CssSelector(".btn-success")).Click();
+			TestTools.WaitUntilElementExists(By.CssSelector(".btn-success"),driver).Click();
 		}
 	}
 
