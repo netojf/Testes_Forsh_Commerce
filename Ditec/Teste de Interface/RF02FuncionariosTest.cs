@@ -10,18 +10,19 @@ namespace Ditec.Teste_de_Interface
 	[TestFixture]
 	public class RF02FuncionariosTest
 	{
+		List<string> data;
 		string email = "teste@teste.com";
-		string emailTeste = "teste1@teste.com";
 		public static IWebDriver driver;
 		public static IJavaScriptExecutor js;
 
 		[SetUp]
 		public void SetUp()
 		{
+			data = new List<string>();
 			driver = new ChromeDriver();
 			js = (IJavaScriptExecutor)driver;
 
-
+			//Acesso ao RF
 			driver.Navigate().GoToUrl("https://admin.ditecdistribuidora.com.br/");
 			driver.Manage().Window.Size = new System.Drawing.Size(1936, 1056);
 			driver.FindElement(By.Id("Usuario")).Click();
@@ -35,7 +36,14 @@ namespace Ditec.Teste_de_Interface
 		[TearDown]
 		protected void TearDown()
 		{
-			ExcluirElemento(emailTeste); 
+			foreach (var search in data)
+			{
+				if (search != "")
+				{
+					ExcluirElemento(search);
+				}
+			}
+
 			driver.Quit();
 		}
 
@@ -61,7 +69,8 @@ namespace Ditec.Teste_de_Interface
 		[Test]
 		public void CTI02CadastroDeFuncionariosCamposValidos()
 		{
-			AcessoCadastro(); 
+			AcessoCadastro();
+
 			string message = TestTools.WaitUntilElementExists(By.CssSelector(".alert"),driver).Text;
 			Assert.That(message == "×\r\nRegistro salvo com sucesso!");
 		}
@@ -70,6 +79,7 @@ namespace Ditec.Teste_de_Interface
 		[Test]
 		public void CTI03CadastroDeFuncionarioEmailExistente()
 		{
+			AcessoCadastro();
 			AcessoCadastro("teste1", 1, "Administrador Teste1", email, "teste1234", true);
 
 			var emailElement = TestTools.WaitUntilElementExists(By.XPath("//input[@id='Email']"),driver);
@@ -83,18 +93,18 @@ namespace Ditec.Teste_de_Interface
 		[Test]
 		public void CTI04CadastroDeFuncionarioNomeExistente()
 		{
-
+			AcessoCadastro();
 			AcessoCadastro("teste", 1, "Administrador Teste1", "teste1@teste.com", "teste1234", true);
 
 			string message = driver.FindElement(By.CssSelector(".alert")).Text;
 			Assert.That(message == "×\r\nRegistro salvo com sucesso!");
-
 		}
 
 
 		[Test]
 		public void CTI05CadastroDeFuncionarioNomeDeUsuarioExistente()
 		{
+			AcessoCadastro();
 			AcessoCadastro("teste1", 1, "Administrador Teste", "teste1@teste.com", "teste1234", true);
 
 			var emailElement = TestTools.WaitUntilElementExists(By.XPath("//*[@id='NomeUsuario']"),driver);
@@ -109,7 +119,7 @@ namespace Ditec.Teste_de_Interface
 		[Test]
 		public void CTI06CadastroDeFuncionarioSenhaExistente()
 		{
-
+			AcessoCadastro();
 			AcessoCadastro("teste1", 1, "Administrador Teste1", "teste1@teste.com", "teste123", true);
 
 			string message = driver.FindElement(By.CssSelector(".alert")).Text;
@@ -149,13 +159,11 @@ namespace Ditec.Teste_de_Interface
 		[Test]
 		public void CTI09CadastroDeFuncionarioNomeDeUsuarioVazio()
 		{
-
 			AcessoCadastro("teste1", 1, "", "teste1@teste.com", "teste1234", true);
 
 			var field = TestTools.WaitUntilElementExists(By.XPath("//*[@id='NomeUsuario']"),driver);
 			string tooltip = field.GetAttribute("ValidationMessage");
 			Assert.IsNotEmpty(tooltip);
-
 
 			Assert.That(TestTools.WaitUntilElementExists(By.CssSelector(".alert"),driver).Text, Is.EqualTo("×\r\nVerifique os dados informados."));
 		}
@@ -190,7 +198,7 @@ namespace Ditec.Teste_de_Interface
 
 	
 		[Test]
-		public void CTI012AlteracaoDeCadastroEmailValido()
+		public void CTI12AlteracaoDeCadastroEmailValido()
 		{
 			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste2@teste.com", "teste1234", true);
 
@@ -201,7 +209,6 @@ namespace Ditec.Teste_de_Interface
 			}
 			else
 			{
-				emailTeste = "teste2@teste.com"; 
 				Assert.IsTrue(false);
 			}
 
@@ -217,7 +224,7 @@ namespace Ditec.Teste_de_Interface
 
 
 		[Test]
-		public void CTI013AlteracaoDeCadastroNomeDeUsuarioValido()
+		public void CTI13AlteracaoDeCadastroNomeDeUsuarioValido()
 		{
 			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
 
@@ -243,7 +250,7 @@ namespace Ditec.Teste_de_Interface
 
 
 		[Test]
-		public void CTI014AlteracaoDeCadastroNomeValido()
+		public void CTI14AlteracaoDeCadastroNomeValido()
 		{
 			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
 
@@ -269,7 +276,7 @@ namespace Ditec.Teste_de_Interface
 
 
 		[Test]
-		public void CTI015AlteracaoDeCadastroPerfilDeUsuarioAnalista()
+		public void CTI15AlteracaoDeCadastroPerfilDeUsuarioAnalista()
 		{
 			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
 
@@ -328,7 +335,7 @@ namespace Ditec.Teste_de_Interface
 
 
 		[Test]
-		public void CTI017AlteracaoDeCadastroNomeInvalido()
+		public void CTI17AlteracaoDeCadastroNomeInvalido()
 		{
 			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
 
@@ -356,7 +363,7 @@ namespace Ditec.Teste_de_Interface
 
 
 		[Test]
-		public void CTI018AlteracaoDeCadastroNomeDeUsuarioInvalido()
+		public void CTI18AlteracaoDeCadastroNomeDeUsuarioInvalido()
 		{
 			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste1@teste.com", "teste1234", true);
 
@@ -384,13 +391,12 @@ namespace Ditec.Teste_de_Interface
 
 
 		[Test]
-		public void CTI019AlteracaoDeCadastroEmailInvalido()
+		public void CTI19AlteracaoDeCadastroEmailInvalido()
 		{
 
 			AcessoCadastro("Teste1", 1, "Administrar Teste1", "teste2@teste.com", "teste1234", true);
 
 			var row = RetornarCadastro("teste2@teste.com");
-			emailTeste = "teste2@teste.com"; 
 			if (row != null)
 			{
 				row.FindElement(By.CssSelector("i[class='fa fa-pencil']")).Click();
@@ -437,6 +443,7 @@ namespace Ditec.Teste_de_Interface
 			string tooltip = passwordInput.GetAttribute("validationMessage");
 			Assert.IsNotEmpty(tooltip);
 		}
+
 
 		[Test]
 		public void CTI21AlteraçãoDeCadastroPerfilNãoSelecionado()
@@ -546,13 +553,13 @@ namespace Ditec.Teste_de_Interface
 		IWebElement RetornarCadastro(string search)
 		{
 			IWebElement searchbar = TestTools.WaitUntilElementExists(By.CssSelector("#iptSearch"),driver);
+			searchbar.Clear();
 			searchbar.Click();
-
 			searchbar.SendKeys(search);
 			searchbar.Click();
 
 
-			TestTools.WaitUntilElementExists(By.CssSelector("button#btnSearch > i[class='fa fa-search']"),driver).Click();
+			TestTools.WaitUntilElementExists(By.XPath("//*[@id='btnSearch']/i"),driver).Click();
 
 			try
 			{
@@ -575,6 +582,8 @@ namespace Ditec.Teste_de_Interface
 			TestTools.WaitUntilElementExists(By.CssSelector("button[title='Cadastrar funcionário']"), driver).Click();
 
 			PreenchimentoDeFormulario(nome, perfilDeUsuario, nomeDeUsuario, email, senha, ativo);
+
+			data.Add(email);
 
 		}
 
